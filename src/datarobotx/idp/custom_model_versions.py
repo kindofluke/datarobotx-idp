@@ -61,7 +61,7 @@ def _has_requirements(folder_path: Optional[Any], files: Optional[List[Any]]) ->
     if folder_path is not None and (pathlib.Path(folder_path) / "requirements.txt").exists():
         return True
     elif files is not None and any(
-        [dest_path == "requirements.txt" for src_path, dest_path in files]
+        [dest_path == "requirements.txt" for  dest_path in files]
     ):
         return True
     else:
@@ -108,13 +108,22 @@ def _get_or_create(
             create = dr.CustomModelVersion.create_clean  # type: ignore
         else:
             create = dr.CustomModelVersion.create_from_previous  # type: ignore
-        env_version = create(
-            custom_model_id,
-            folder_path=folder_path,
-            max_wait=max_wait,
-            runtime_parameter_values=runtime_parameter_values_objs,
-            **kwargs,
-        )
+        if folder_path is None and kwargs['files'] is not None:
+            env_version = create(
+                custom_model_id,
+                max_wait=max_wait,
+                runtime_parameter_values=runtime_parameter_values_objs,
+                **kwargs,
+            )
+        else:
+            env_version = create(
+                custom_model_id,
+                folder_path=folder_path,
+                max_wait=max_wait,
+                runtime_parameter_values=runtime_parameter_values_objs,
+                **kwargs,
+            )
+
 
         env_version.update(description=f"\nChecksum: {model_version_token}")
 
